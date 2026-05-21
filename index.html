@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>안전 탐험대 최종 성적표</title>
+    <title>안전 탐험대 퀴즈</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #ffffff; color: #333; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px); background-size: 30px 30px; }
@@ -31,6 +31,7 @@
             <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
             <div id="options"></div>
             <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
+            <div id="hintArea" style="margin-top:10px; color:#c0392b; font-weight:bold;"></div>
             <button id="nextBtn" class="btn-quiz" style="display:none;" onclick="nextQuestion()">다음 문제로</button>
         </div>
         <div id="finalReport" style="display:none;">
@@ -96,6 +97,7 @@ function showQuestion() {
     document.getElementById('quizTitle').innerText = (currentIndex + 1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
     document.getElementById('resultText').innerText = "";
+    document.getElementById('hintArea').innerText = "";
     document.getElementById('nextBtn').style.display = "none";
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
@@ -110,12 +112,16 @@ function showQuestion() {
 
 function checkAnswer(userAns) {
     let qData = quizData[currentSet][currentIndex];
-    let isCorrect = (userAns == qData.a);
+    let isCorrect = (userAns === qData.a);
     results.push({q: qData.q, correct: isCorrect, h: qData.h});
 
     document.getElementById('options').innerHTML = "";
     document.getElementById('resultText').style.color = isCorrect ? "green" : "red";
-    document.getElementById('resultText').innerHTML = isCorrect ? "✅ 정답입니다!" : `❌ 틀렸습니다!<br><small style="color:black">힌트: ${qData.h}</small>`;
+    document.getElementById('resultText').innerText = isCorrect ? "✅ 정답입니다!" : "❌ 틀렸습니다!";
+    
+    if(!isCorrect) {
+        document.getElementById('hintArea').innerText = "힌트: " + qData.h;
+    }
     document.getElementById('nextBtn').style.display = "block";
 }
 
