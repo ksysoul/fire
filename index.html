@@ -2,18 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>안전 탐험대 퀴즈 게임</title>
+    <title>안전 탐험대 퀴즈</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #ffffff; color: #333; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px); background-size: 30px 30px; background-color: white; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px); background-size: 30px 30px; }
         .module { background: white; padding: 20px; margin-bottom: 20px; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .btn-video { display: inline-block; padding: 10px; background: #f8f9fa; border: 1px solid #ccc; text-decoration: none; color: #333; margin-bottom: 5px; }
         .btn-quiz { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; display: block; width: 100%; }
-        
-        /* 팝업 스타일 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; width: 80%; max-width: 400px; border: 2px solid #333; text-align: center; }
-        .option-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; background: #eee; border: 1px solid #ccc; cursor: pointer; }
+        .modal-content { background: white; padding: 30px; width: 90%; max-width: 400px; border: 2px solid #333; text-align: center; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -26,92 +24,75 @@
 <div id="quizModal" class="modal">
     <div class="modal-content">
         <h2 id="quizTitle">퀴즈</h2>
-        <p id="quizQuestion"></p>
+        <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
         <div id="options"></div>
         <p id="hint" style="color: #e74c3c; font-weight: bold;"></p>
-        <button onclick="closeModal()" style="margin-top:20px;">나가기</button>
     </div>
 </div>
 
 <script>
+// 모든 문제를 OX 또는 선택형(객관식)으로 통일
 const quizData = {
     1: [
-        {q: "소화기 안전핀은 평소에 뽑아두는 것이 좋다?", a: "X", h: "필요할 때 바로 뽑아야 합니다!"},
+        {q: "소화기 안전핀은 평소에 뽑아두는 것이 좋다?", a: "X", h: "필요할 때 뽑아야 해요!"},
         {q: "소화기를 사용할 때는 바람을 등지고 서야 한다?", a: "O", h: ""},
-        {q: "식용유 화재 시 물을 부어 끄는 것이 좋다?", a: "X", h: "기름과 물은 만나면 폭발적으로 튑니다!"},
+        {q: "식용유 화재 시 물을 부어 끄는 것이 좋다?", a: "X", h: "기름과 물은 폭발적으로 튀어요!"},
         {q: "소화기 손잡이를 잡을 때는 힘껏 움켜쥐어야 한다?", a: "O", h: ""},
         {q: "소화기는 햇빛이나 습기가 없는 곳에 보관한다?", a: "O", h: ""},
-        {q: "어린이는 불을 보면 즉시 소화기를 사용해야 한다?", a: "X", h: "먼저 안전한 곳으로 대피하세요!"},
-        {q: "세상에서 가장 뜨거운 과일은?", a: "천도복숭아", h: "힌트: 숫자 1000(천)이 들어갑니다!"},
-        {q: "세상에서 가장 착한 사자는?", a: "자원봉사자", h: "힌트: 남을 돕는 사람을 뜻해요."},
-        {q: "소화기 사용 순서로 알맞은 것은?", a: "안전핀 뽑기-노즐 잡기-분사", h: ""},
-        {q: "화재 신고 번호는?", a: "119", h: ""}
+        {q: "소화기 노즐은 불꽃을 향해 빗자루 쓸듯 분사한다?", a: "O", h: ""},
+        {q: "소화기 분말은 인체에 매우 해롭다?", a: "X", h: "인체에 무해한 성분입니다."},
+        {q: "화재 시 소화기를 가장 먼저 찾는다?", a: "O", h: ""},
+        {q: "소화기는 어린이 혼자 사용해도 된다?", a: "X", h: "먼저 대피가 우선이에요!"},
+        {q: "소화기에도 유통기한(교체 시기)이 있다?", a: "O", h: ""}
     ],
     2: [
         {q: "불이 나면 엘리베이터를 타고 대피한다?", a: "X", h: "화재 시 엘리베이터는 위험해요!"},
-        {q: "화재 신고 시 주소는 말하지 않아도 된다?", a: "X", h: "정확한 위치를 알려야 해요."},
+        {q: "화재 신고 시 정확한 주소를 말해야 한다?", a: "O", h: ""},
         {q: "불이야! 하고 크게 외쳐 주변에 알린다?", a: "O", h: ""},
-        {q: "119 신고 후에는 소방관이 끊기 전까지 끊지 않는다?", a: "O", h: ""},
-        {q: "공중전화에서는 돈 없이 119 신고가 가능하다?", a: "O", h: ""},
-        {q: "휴대폰이 개통되지 않아도 119 신고는 가능하다?", a: "O", h: ""},
-        {q: "불이 나면 불을 부르는 것은?", a: "방화범", h: "힌트: 불을 놓는 사람을 말해요."},
-        {q: "화장실에서 나는 불은?", a: "화장실 불", h: "힌트: 넌센스입니다!"},
-        {q: "대피할 때 몸의 자세는?", a: "낮은 자세", h: ""},
-        {q: "화재 발생 시 가장 먼저 해야 할 일은?", a: "비상벨 누르기", h: ""}
+        {q: "119 신고 후 소방관이 끊기 전까지 끊지 않는다?", a: "O", h: ""},
+        {q: "공중전화에서는 동전이 없어도 119 신고가 된다?", a: "O", h: ""},
+        {q: "휴대폰 잠금 상태에서도 119 신고는 가능하다?", a: "O", h: ""},
+        {q: "집 안의 모든 문을 다 열어놓고 대피한다?", a: "X", h: "연기 확산을 막기 위해 문을 닫아야 해요!"},
+        {q: "대피 시 엘리베이터 버튼을 눌러두고 기다린다?", a: "X", h: "계단으로 내려가야 해요!"},
+        {q: "화재 발생 시 가장 먼저 비상벨을 누른다?", a: "O", h: ""},
+        {q: "대피할 때는 낮은 자세로 이동한다?", a: "O", h: ""}
     ],
     3: [
         {q: "화재 시 불꽃보다 연기가 더 위험하다?", a: "O", h: ""},
         {q: "연기 속을 지나갈 때는 서서 뛰어가야 한다?", a: "X", h: "낮은 자세가 중요해요!"},
-        {q: "수건은 물에 적셔서 입과 코를 막는 것이 좋다?", a: "O", h: ""},
+        {q: "수건은 물에 적셔서 입과 코를 막아야 한다?", a: "O", h: ""},
         {q: "대피할 때 무릎을 대고 기어가야 한다?", a: "O", h: ""},
-        {q: "문을 열기 전 손잡이가 뜨거운지 확인해야 한다?", a: "O", h: ""},
+        {q: "문을 열기 전 손잡이가 뜨거운지 확인한다?", a: "O", h: ""},
         {q: "연기가 들어오지 못하게 문틈을 막는 것은 도움이 된다?", a: "O", h: ""},
-        {q: "연기가 가장 좋아하는 가수는?", a: "Smoke on the Water", h: "힌트: 영어 제목입니다."},
-        {q: "세상에서 제일 센 연기는?", a: "연기대상", h: "힌트: 방송사 연말 시상식이에요."},
-        {q: "연기를 피하기 위해 벽을 짚을 때 올바른 손은?", a: "손등", h: ""},
-        {q: "구조 요청 시 창밖으로 흔들기 좋은 색은?", a: "밝은 색", h: ""}
+        {q: "연기가 가득하면 창문을 모두 열어 환기한다?", a: "X", h: "외부 공기가 들어와 불이 커질 수 있어요!"},
+        {q: "대피 시 가방이나 짐을 챙겨서 나간다?", a: "X", h: "몸만 빨리 대피하세요!"},
+        {q: "벽을 짚을 때는 손등으로 짚고 이동한다?", a: "O", h: ""},
+        {q: "구조 요청 시 밝은 색 옷을 흔든다?", a: "O", h: ""}
     ]
 };
 
-let currentSet = 0;
-let currentIndex = 0;
+let currentSet = 0, currentIndex = 0;
 
 function openQuiz(set) {
-    currentSet = set;
-    currentIndex = 0;
+    currentSet = set; currentIndex = 0;
     document.getElementById('quizModal').style.display = 'flex';
     showQuestion();
 }
 
 function showQuestion() {
     let qData = quizData[currentSet][currentIndex];
-    document.getElementById('quizTitle').innerText = currentSet + "번 주제 퀴즈 (" + (currentIndex+1) + "/10)";
+    document.getElementById('quizTitle').innerText = (currentIndex+1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
     document.getElementById('hint').innerText = "";
-    
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
-    
-    // 단순하게 OX 또는 객관식 버튼 생성
-    if(qData.q.includes("?")) {
-        ['O', 'X'].forEach(opt => {
-            let btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(opt);
-            optionsDiv.appendChild(btn);
-        });
-    } else {
-        // 객관식은 예시를 단순화하여 처리
-        let btn = document.createElement('input');
-        btn.type = "text";
-        btn.placeholder = "답을 입력하세요";
-        let sub = document.createElement('button');
-        sub.innerText = "제출";
-        sub.onclick = () => checkAnswer(btn.value);
+    ['O', 'X'].forEach(opt => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(opt);
         optionsDiv.appendChild(btn);
-        optionsDiv.appendChild(sub);
-    }
+    });
 }
 
 function checkAnswer(userAns) {
@@ -120,7 +101,7 @@ function checkAnswer(userAns) {
         alert("정답입니다!");
         currentIndex++;
         if(currentIndex < 10) showQuestion();
-        else { alert("축하합니다! 다 풀었습니다."); closeModal(); }
+        else { alert("축하합니다! 모두 완료했습니다."); closeModal(); }
     } else {
         document.getElementById('hint').innerText = "힌트: " + qData.h;
     }
@@ -128,16 +109,13 @@ function checkAnswer(userAns) {
 
 function closeModal() { document.getElementById('quizModal').style.display = 'none'; }
 
-// 초기화
 const titles = ["소화기 사용법", "어린이 행동요령", "불보다 무서운 연기"];
 const urls = ["2553", "2880", "1194"];
-let modHtml = "";
-for(let i=0; i<3; i++) {
-    modHtml += `<div class="module"><h2>${i+1}. ${titles[i]}</h2>
+document.getElementById('modules').innerHTML = titles.map((t, i) => 
+    `<div class="module"><h2>${i+1}. ${t}</h2>
     <a href="https://www.safetv.go.kr/base/video/view?idx=${urls[i]}" target="_blank" class="btn-video">▶ 영상 다시보기</a>
-    <button class="btn-quiz" onclick="openQuiz(${i+1})">문제 풀어보기</button></div>`;
-}
-document.getElementById('modules').innerHTML = modHtml;
+    <button class="btn-quiz" onclick="openQuiz(${i+1})">문제 풀어보기</button></div>`
+).join('');
 </script>
 
 </body>
