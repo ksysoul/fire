@@ -8,7 +8,7 @@
         .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px); background-size: 30px 30px; }
         .module { background: white; padding: 20px; margin-bottom: 20px; border: 1px solid #ccc; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); }
         .btn-video { display: inline-block; padding: 10px; background: #f8f9fa; border: 1px solid #ccc; text-decoration: none; color: #333; margin-bottom: 5px; }
-        .btn-quiz { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; display: block; width: 100%; }
+        .btn-quiz { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; display: block; width: 100%; margin-top: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 30px; width: 90%; max-width: 500px; border: 2px solid #333; text-align: center; max-height: 85vh; overflow-y: auto; }
         .option-btn { display: block; width: 100%; padding: 12px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; cursor: pointer; font-size: 16px; }
@@ -31,6 +31,7 @@
             <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
             <div id="options"></div>
             <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
+            <button id="nextBtn" class="btn-quiz" style="display:none;" onclick="nextQuestion()">다음 문제로</button>
         </div>
         <div id="finalReport" style="display:none;">
             <h3>📝 최종 결과 요약</h3>
@@ -95,6 +96,7 @@ function showQuestion() {
     document.getElementById('quizTitle').innerText = (currentIndex + 1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
     document.getElementById('resultText').innerText = "";
+    document.getElementById('nextBtn').style.display = "none";
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
     ['O', 'X'].forEach(opt => {
@@ -111,14 +113,16 @@ function checkAnswer(userAns) {
     let isCorrect = (userAns == qData.a);
     results.push({q: qData.q, correct: isCorrect, h: qData.h});
 
+    document.getElementById('options').innerHTML = "";
     document.getElementById('resultText').style.color = isCorrect ? "green" : "red";
-    document.getElementById('resultText').innerText = isCorrect ? "정답입니다!" : "틀렸습니다!";
-    
-    setTimeout(() => {
-        currentIndex++;
-        if(currentIndex < 10) showQuestion();
-        else showReport();
-    }, 800);
+    document.getElementById('resultText').innerHTML = isCorrect ? "✅ 정답입니다!" : `❌ 틀렸습니다!<br><small style="color:black">힌트: ${qData.h}</small>`;
+    document.getElementById('nextBtn').style.display = "block";
+}
+
+function nextQuestion() {
+    currentIndex++;
+    if(currentIndex < 10) showQuestion();
+    else showReport();
 }
 
 function showReport() {
