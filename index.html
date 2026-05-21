@@ -10,8 +10,9 @@
         .btn-video { display: inline-block; padding: 10px; background: #f8f9fa; border: 1px solid #ccc; text-decoration: none; color: #333; margin-bottom: 5px; }
         .btn-quiz { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; display: block; width: 100%; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; width: 90%; max-width: 400px; border: 2px solid #333; text-align: center; }
+        .modal-content { background: white; padding: 30px; width: 90%; max-width: 450px; border: 2px solid #333; text-align: center; max-height: 80vh; overflow-y: auto; }
         .option-btn { display: block; width: 100%; padding: 15px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; cursor: pointer; font-size: 16px; }
+        .result-item { text-align: left; margin: 10px 0; padding: 5px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -24,10 +25,17 @@
 <div id="quizModal" class="modal">
     <div class="modal-content">
         <h2 id="quizTitle">퀴즈</h2>
-        <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
-        <div id="options"></div>
-        <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
-        <p id="hint" style="color: #e74c3c; font-weight: bold;"></p>
+        <div id="quizBody">
+            <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
+            <div id="options"></div>
+            <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
+            <p id="hint" style="color: #e74c3c; font-weight: bold;"></p>
+        </div>
+        <div id="finalReport" style="display:none;">
+            <h3>퀴즈 결과</h3>
+            <div id="reportList"></div>
+            <button onclick="closeModal()" class="btn-quiz" style="margin-top:20px;">닫기</button>
+        </div>
     </div>
 </div>
 
@@ -71,11 +79,13 @@ const quizData = {
     ]
 };
 
-let currentSet = 0, currentIndex = 0;
+let currentSet = 0, currentIndex = 0, results = [];
 
 function openQuiz(set) {
-    currentSet = set; currentIndex = 0;
+    currentSet = set; currentIndex = 0; results = [];
     document.getElementById('quizModal').style.display = 'flex';
+    document.getElementById('quizBody').style.display = 'block';
+    document.getElementById('finalReport').style.display = 'none';
     showQuestion();
 }
 
@@ -98,20 +108,34 @@ function showQuestion() {
 
 function checkAnswer(userAns) {
     let qData = quizData[currentSet][currentIndex];
-    if(userAns == qData.a) {
+    let isCorrect = (userAns == qData.a);
+    results.push({q: qData.q, correct: isCorrect});
+
+    if(isCorrect) {
         document.getElementById('resultText').style.color = "green";
         document.getElementById('resultText').innerText = "정답입니다!";
-        document.getElementById('hint').innerText = ""; 
         setTimeout(() => {
             currentIndex++;
             if(currentIndex < 10) showQuestion();
-            else { alert("축하합니다! 모두 완료했습니다."); closeModal(); }
-        }, 1000);
+            else showReport();
+        }, 800);
     } else {
         document.getElementById('resultText').style.color = "red";
         document.getElementById('resultText').innerText = "틀렸습니다!";
         document.getElementById('hint').innerText = "힌트: " + qData.h;
     }
+}
+
+function showReport() {
+    document.getElementById('quizBody').style.display = 'none';
+    document.getElementById('finalReport').style.display = 'block';
+    document.getElementById('quizTitle').innerText = "최종 결과";
+    let score = results.filter(r => r.correct).length;
+    let listHtml = `<p>총점: ${score}/10점</p>`;
+    results.forEach((r, i) => {
+        listHtml += `<div class="result-item">${i+1}. ${r.correct ? "✅" : "❌"} ${r.q}</div>`;
+    });
+    document.getElementById('reportList').innerHTML = listHtml;
 }
 
 function closeModal() { document.getElementById('quizModal').style.display = 'none'; }
