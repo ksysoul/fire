@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>안전 탐험대 퀴즈</title>
+    <title>안전 탐험대 최종 성적표</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #ffffff; color: #333; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 30px; background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px); background-size: 30px 30px; }
@@ -10,9 +10,11 @@
         .btn-video { display: inline-block; padding: 10px; background: #f8f9fa; border: 1px solid #ccc; text-decoration: none; color: #333; margin-bottom: 5px; }
         .btn-quiz { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; display: block; width: 100%; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; width: 90%; max-width: 450px; border: 2px solid #333; text-align: center; max-height: 80vh; overflow-y: auto; }
-        .option-btn { display: block; width: 100%; padding: 15px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; cursor: pointer; font-size: 16px; }
-        .result-item { text-align: left; margin: 10px 0; padding: 5px; border-bottom: 1px solid #eee; }
+        .modal-content { background: white; padding: 30px; width: 90%; max-width: 500px; border: 2px solid #333; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .option-btn { display: block; width: 100%; padding: 12px; margin: 5px 0; background: #f9f9f9; border: 1px solid #ccc; cursor: pointer; font-size: 16px; }
+        .result-item { text-align: left; margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        .correct { border-left: 5px solid #27ae60; background: #eafaf1; }
+        .wrong { border-left: 5px solid #e74c3c; background: #fdedec; }
     </style>
 </head>
 <body>
@@ -29,11 +31,10 @@
             <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
             <div id="options"></div>
             <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
-            <p id="hint" style="color: #e74c3c; font-weight: bold;"></p>
         </div>
         <div id="finalReport" style="display:none;">
-            <h3>퀴즈 결과</h3>
-            <div id="reportList"></div>
+            <h3>📝 최종 결과 요약</h3>
+            <div id="reportList" style="text-align: left;"></div>
             <button onclick="closeModal()" class="btn-quiz" style="margin-top:20px;">닫기</button>
         </div>
     </div>
@@ -94,7 +95,6 @@ function showQuestion() {
     document.getElementById('quizTitle').innerText = (currentIndex + 1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
     document.getElementById('resultText').innerText = "";
-    document.getElementById('hint').innerText = ""; 
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
     ['O', 'X'].forEach(opt => {
@@ -109,31 +109,30 @@ function showQuestion() {
 function checkAnswer(userAns) {
     let qData = quizData[currentSet][currentIndex];
     let isCorrect = (userAns == qData.a);
-    results.push({q: qData.q, correct: isCorrect});
+    results.push({q: qData.q, correct: isCorrect, h: qData.h});
 
-    if(isCorrect) {
-        document.getElementById('resultText').style.color = "green";
-        document.getElementById('resultText').innerText = "정답입니다!";
-        setTimeout(() => {
-            currentIndex++;
-            if(currentIndex < 10) showQuestion();
-            else showReport();
-        }, 800);
-    } else {
-        document.getElementById('resultText').style.color = "red";
-        document.getElementById('resultText').innerText = "틀렸습니다!";
-        document.getElementById('hint').innerText = "힌트: " + qData.h;
-    }
+    document.getElementById('resultText').style.color = isCorrect ? "green" : "red";
+    document.getElementById('resultText').innerText = isCorrect ? "정답입니다!" : "틀렸습니다!";
+    
+    setTimeout(() => {
+        currentIndex++;
+        if(currentIndex < 10) showQuestion();
+        else showReport();
+    }, 800);
 }
 
 function showReport() {
     document.getElementById('quizBody').style.display = 'none';
     document.getElementById('finalReport').style.display = 'block';
-    document.getElementById('quizTitle').innerText = "최종 결과";
+    document.getElementById('quizTitle').innerText = "학습 결과 요약";
     let score = results.filter(r => r.correct).length;
-    let listHtml = `<p>총점: ${score}/10점</p>`;
+    let listHtml = `<strong>총점: ${score}/10점</strong><hr>`;
     results.forEach((r, i) => {
-        listHtml += `<div class="result-item">${i+1}. ${r.correct ? "✅" : "❌"} ${r.q}</div>`;
+        listHtml += `<div class="result-item ${r.correct ? 'correct' : 'wrong'}">
+            ${i+1}. ${r.q}<br>
+            <strong>${r.correct ? "✅ 정답" : "❌ 오답"}</strong>
+            ${!r.correct ? `<br><small style="color:#c0392b;">피드백: ${r.h}</small>` : ""}
+        </div>`;
     });
     document.getElementById('reportList').innerHTML = listHtml;
 }
