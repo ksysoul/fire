@@ -26,12 +26,12 @@
         <h2 id="quizTitle">퀴즈</h2>
         <p id="quizQuestion" style="font-size: 1.2em; font-weight: bold;"></p>
         <div id="options"></div>
+        <p id="resultText" style="font-weight: bold; margin-top:10px;"></p>
         <p id="hint" style="color: #e74c3c; font-weight: bold;"></p>
     </div>
 </div>
 
 <script>
-// 모든 문제를 OX 또는 선택형(객관식)으로 통일
 const quizData = {
     1: [
         {q: "소화기 안전핀은 평소에 뽑아두는 것이 좋다?", a: "X", h: "필요할 때 뽑아야 해요!"},
@@ -83,7 +83,9 @@ function showQuestion() {
     let qData = quizData[currentSet][currentIndex];
     document.getElementById('quizTitle').innerText = (currentIndex+1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
+    document.getElementById('resultText').innerText = "";
     document.getElementById('hint').innerText = "";
+    
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
     ['O', 'X'].forEach(opt => {
@@ -98,11 +100,16 @@ function showQuestion() {
 function checkAnswer(userAns) {
     let qData = quizData[currentSet][currentIndex];
     if(userAns == qData.a) {
-        alert("정답입니다!");
-        currentIndex++;
-        if(currentIndex < 10) showQuestion();
-        else { alert("축하합니다! 모두 완료했습니다."); closeModal(); }
+        document.getElementById('resultText').style.color = "green";
+        document.getElementById('resultText').innerText = "정답입니다! 다음 문제로...";
+        setTimeout(() => {
+            currentIndex++;
+            if(currentIndex < 10) showQuestion();
+            else { alert("축하합니다! 모두 완료했습니다."); closeModal(); }
+        }, 1000);
     } else {
+        document.getElementById('resultText').style.color = "red";
+        document.getElementById('resultText').innerText = "틀렸습니다. 다시 생각해보세요!";
         document.getElementById('hint').innerText = "힌트: " + qData.h;
     }
 }
