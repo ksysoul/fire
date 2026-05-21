@@ -81,11 +81,10 @@ function openQuiz(set) {
 
 function showQuestion() {
     let qData = quizData[currentSet][currentIndex];
-    document.getElementById('quizTitle').innerText = (currentIndex+1) + "번 문제";
+    document.getElementById('quizTitle').innerText = (currentIndex + 1) + "번 문제";
     document.getElementById('quizQuestion').innerText = qData.q;
     document.getElementById('resultText').innerText = "";
-    document.getElementById('hint').innerText = "";
-    
+    document.getElementById('hint').innerText = ""; 
     let optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = "";
     ['O', 'X'].forEach(opt => {
@@ -101,7 +100,8 @@ function checkAnswer(userAns) {
     let qData = quizData[currentSet][currentIndex];
     if(userAns == qData.a) {
         document.getElementById('resultText').style.color = "green";
-        document.getElementById('resultText').innerText = "정답입니다! 다음 문제로...";
+        document.getElementById('resultText').innerText = "정답입니다!";
+        document.getElementById('hint').innerText = ""; 
         setTimeout(() => {
             currentIndex++;
             if(currentIndex < 10) showQuestion();
@@ -109,7 +109,7 @@ function checkAnswer(userAns) {
         }, 1000);
     } else {
         document.getElementById('resultText').style.color = "red";
-        document.getElementById('resultText').innerText = "틀렸습니다. 다시 생각해보세요!";
+        document.getElementById('resultText').innerText = "틀렸습니다!";
         document.getElementById('hint').innerText = "힌트: " + qData.h;
     }
 }
